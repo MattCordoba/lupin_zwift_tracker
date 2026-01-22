@@ -1,0 +1,9 @@
+node_modules
+pnpm-lock.yaml
+.DS_Store
+.expo
+.expo-shared
+dist
+build
+.env
+.env.*
