@@ -1,0 +1,16 @@
+{
+  "name": "@lupin/data",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@lupin/config": "workspace:*",
+    "@lupin/types": "workspace:*",
+    "firebase": "^10.12.2"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
