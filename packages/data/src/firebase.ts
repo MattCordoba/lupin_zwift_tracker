@@ -13,7 +13,11 @@ const firebaseConfig = {
 
 export const isFirebaseConfigured = Object.values(firebaseConfig).every(Boolean);
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const app = isFirebaseConfigured
+  ? getApps().length
+    ? getApps()[0]
+    : initializeApp(firebaseConfig)
+  : null;
 
-export const firebaseAuth = getAuth(app);
-export const firebaseDb = getFirestore(app);
+export const firebaseAuth = app ? getAuth(app) : null;
+export const firebaseDb = app ? getFirestore(app) : null;

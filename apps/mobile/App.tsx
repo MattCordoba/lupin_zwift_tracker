@@ -1,27 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  Image,
+  Platform,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
   TextInput,
-  Platform,
-  Image,
-  ScrollView
+  View
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import * as Google from "expo-auth-session/providers/google";
-import * as AppleAuthentication from "expo-apple-authentication";
-import { Button, colors } from "@lupin/ui";
+import { Button, colors, typography } from "@lupin/ui";
 import {
   ensureUserProfile,
+  isFirebaseConfigured,
   observeAuthState,
-  signInWithAppleCredential,
-  signInWithGoogleCredential,
   signOutUser,
   subscribeToUserProfile,
-  updateUserPreferences,
-  isFirebaseConfigured
+  updateUserPreferences
 } from "@lupin/data";
 import type { UserPreferences, UserProfile } from "@lupin/types";
 
@@ -40,14 +35,6 @@ export default function App() {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeBudgetInput, setTimeBudgetInput] = useState("60");
-  const [appleAvailable, setAppleAvailable] = useState(false);
-
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    expoClientId: process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID
-  });
 
   useEffect(() => {
     let profileUnsubscribe: (() => void) | undefined;
@@ -80,53 +67,6 @@ export default function App() {
     }
   }, [profile?.preferences?.timeBudgetMinutes]);
 
-  useEffect(() => {
-    if (response?.type !== "success") {
-      return;
-    }
-    const { authentication } = response;
-    if (!authentication) {
-      setStatus("Google auth completed without tokens.");
-      return;
-    }
-
-    const idToken = authentication.idToken ?? undefined;
-    const accessToken = authentication.accessToken ?? undefined;
-    if (!idToken && !accessToken) {
-      setStatus("Google auth did not return a token.");
-      return;
-    }
-    signInWithGoogleCredential(idToken, accessToken).catch((error: Error) =>
-      setStatus(error.message)
-    );
-  }, [response]);
-
-  useEffect(() => {
-    if (Platform.OS === "ios") {
-      AppleAuthentication.isAvailableAsync()
-        .then(setAppleAvailable)
-        .catch(() => setAppleAvailable(false));
-    }
-  }, []);
-
-  const handleAppleSignIn = async () => {
-    try {
-      const result = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL
-        ]
-      });
-      if (!result.identityToken) {
-        setStatus("Apple auth did not return a token.");
-        return;
-      }
-      await signInWithAppleCredential(result.identityToken, result.nonce ?? undefined);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Apple sign-in failed.");
-    }
-  };
-
   const updatePreferences = async (next: UserPreferences) => {
     if (!user) {
       return;
@@ -156,14 +96,25 @@ export default function App() {
     setTimeBudgetInput(String(nextMinutes));
   };
 
+  const footerCopy = useMemo(
+    () =>
+      "Zwift and Garmin are trademarks of their respective owners. This app is not affiliated with or endorsed by Zwift or Garmin.",
+    []
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.card}>
+        <View style={styles.hero}>
+          <Text style={styles.kicker}>Performance ready</Text>
           <Text style={styles.title}>Lupin Zwift Completion Tracker</Text>
-          <Text style={styles.subtitle}>Cross-platform rider profile + preferences</Text>
+          <Text style={styles.subtitle}>
+            Personalize your training window, stay on top of badges, and keep every
+            ride in sync.
+          </Text>
+        </View>
 
+        <View style={styles.card}>
           {!isFirebaseConfigured && (
             <Text style={styles.notice}>
               Add Firebase env vars to enable auth and shared profiles.
@@ -176,19 +127,15 @@ export default function App() {
             <View style={styles.section}>
               <Button
                 label={
-                  request && isFirebaseConfigured
+                  Platform.OS === "web"
                     ? "Continue with Google"
-                    : "Google auth unavailable"
+                    : "Connect on web to sign in"
                 }
-                onPress={() =>
-                  request && isFirebaseConfigured ? promptAsync() : undefined
-                }
+                onPress={undefined}
               />
-              {Platform.OS === "ios" && appleAvailable && (
-                <Button label="Continue with Apple" onPress={handleAppleSignIn} />
-              )}
               <Text style={styles.helperText}>
-                Your profile syncs across web + mobile once signed in.
+                Mobile auth requires native provider setup. For now, sign in on the
+                web app to create your profile.
               </Text>
             </View>
           )}
@@ -207,7 +154,7 @@ export default function App() {
                     </Text>
                   </View>
                 )}
-                <View style={styles.profileMeta}>
+                <View>
                   <Text style={styles.profileName}>
                     {profile?.displayName || user.displayName || "Lupin Rider"}
                   </Text>
@@ -249,11 +196,8 @@ export default function App() {
 
         <View style={styles.footer}>
           <Text style={styles.footerTitle}>Lupin Zwift Completion Tracker</Text>
-          <Text style={styles.footerText}>© 2024 Lupin</Text>
-          <Text style={styles.footerText}>
-            Zwift and Garmin are trademarks of their respective owners. This app is not
-            affiliated with or endorsed by Zwift or Garmin.
-          </Text>
+          <Text style={styles.footerText}>© 2026 Lupin</Text>
+          <Text style={styles.footerText}>{footerCopy}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -263,26 +207,41 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.night,
-    padding: 24
+    backgroundColor: colors.night
   },
   scrollContent: {
+    padding: 24,
     gap: 24
   },
-  card: {
-    backgroundColor: colors.steel,
-    padding: 24,
-    borderRadius: 18,
+  hero: {
     gap: 12
+  },
+  kicker: {
+    color: colors.volt,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    fontSize: 12,
+    fontFamily: typography.headingFont
   },
   title: {
     color: colors.ice,
-    fontSize: 24,
-    fontWeight: "700"
+    fontSize: 28,
+    fontFamily: typography.displayFont,
+    textTransform: "uppercase"
   },
   subtitle: {
     color: colors.ice,
-    opacity: 0.8
+    opacity: 0.8,
+    fontSize: 14,
+    lineHeight: 20
+  },
+  card: {
+    backgroundColor: colors.steel,
+    padding: 20,
+    borderRadius: 18,
+    gap: 16,
+    borderWidth: 1,
+    borderColor: colors.graphite
   },
   section: {
     gap: 16
@@ -294,7 +253,8 @@ const styles = StyleSheet.create({
   helperText: {
     color: colors.ice,
     opacity: 0.6,
-    fontSize: 12
+    fontSize: 12,
+    lineHeight: 18
   },
   profileHeader: {
     flexDirection: "row",
@@ -304,7 +264,9 @@ const styles = StyleSheet.create({
   avatar: {
     width: 56,
     height: 56,
-    borderRadius: 28
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: colors.accent
   },
   avatarFallback: {
     width: 56,
@@ -312,19 +274,18 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     backgroundColor: colors.night,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: colors.accent
   },
   avatarText: {
     color: colors.ice,
-    fontWeight: "700"
-  },
-  profileMeta: {
-    gap: 4
+    fontFamily: typography.headingFont
   },
   profileName: {
     color: colors.ice,
     fontSize: 18,
-    fontWeight: "700"
+    fontFamily: typography.headingFont
   },
   profileEmail: {
     color: colors.ice,
@@ -332,14 +293,18 @@ const styles = StyleSheet.create({
   },
   preferenceCard: {
     backgroundColor: colors.night,
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 16,
-    gap: 12
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.graphite
   },
   preferenceTitle: {
     color: colors.ice,
-    fontWeight: "700",
-    fontSize: 16
+    fontFamily: typography.headingFont,
+    fontSize: 16,
+    textTransform: "uppercase",
+    letterSpacing: 1
   },
   preferenceLabel: {
     color: colors.ice,
@@ -352,18 +317,20 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: colors.steel,
+    backgroundColor: colors.carbon,
     color: colors.ice,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 10
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.graphite
   },
   footer: {
     gap: 6
   },
   footerTitle: {
     color: colors.ice,
-    fontWeight: "700"
+    fontFamily: typography.headingFont
   },
   footerText: {
     color: colors.ice,

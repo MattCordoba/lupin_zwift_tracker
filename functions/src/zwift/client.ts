@@ -92,15 +92,24 @@ export const createZwiftClient = async (
         callClientMethod(mobileClient, ["getRoutes", "routes", "getWorldRoutes"])
     };
   } catch (error) {
-    const fallbackModule = await loadModule("zwift-client");
-    const fallbackClient = await buildClientFromModule(fallbackModule, auth);
-    return {
-      getProfile: async () =>
-        callClientMethod(fallbackClient, ["getProfile", "profile", "getUserProfile"]),
-      getActivities: async () =>
-        callClientMethod(fallbackClient, ["getActivities", "activities", "activityFeed"]),
-      getRoutes: async () =>
-        callClientMethod(fallbackClient, ["getRoutes", "routes", "getWorldRoutes"])
-    };
+    try {
+      const fallbackModule = await loadModule("zwift-client");
+      const fallbackClient = await buildClientFromModule(fallbackModule, auth);
+      return {
+        getProfile: async () =>
+          callClientMethod(fallbackClient, ["getProfile", "profile", "getUserProfile"]),
+        getActivities: async () =>
+          callClientMethod(fallbackClient, ["getActivities", "activities", "activityFeed"]),
+        getRoutes: async () =>
+          callClientMethod(fallbackClient, ["getRoutes", "routes", "getWorldRoutes"])
+      };
+    } catch (fallbackError) {
+      const baseMessage = error instanceof Error ? error.message : "Unknown error";
+      const fallbackMessage =
+        fallbackError instanceof Error ? fallbackError.message : "Unknown error";
+      throw new Error(
+        `Failed to load zwift-mobile-api (${baseMessage}) and no zwift-client fallback is installed (${fallbackMessage}).`
+      );
+    }
   }
 };

@@ -1,4 +1,25 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "compilerOptions": {
+    "jsx": "preserve",
+    "noEmit": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": [
+      "node"
+    ],
+    "allowJs": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "pages",
+    "styles"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

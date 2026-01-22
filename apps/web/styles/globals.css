@@ -1,0 +1,34 @@
+:root {
+  color-scheme: dark;
+  --zwift-black: #0b0d10;
+  --zwift-carbon: #141821;
+  --zwift-slate: #1f2533;
+  --zwift-ice: #f4f6fb;
+  --zwift-accent: #f46b2a;
+  --zwift-glow: #ff8a3d;
+  --zwift-volt: #b6ff2b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Rajdhani", "Barlow Condensed", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top left, #1c222f 0%, #0b0d10 55%),
+    linear-gradient(135deg, rgba(244, 107, 42, 0.12), transparent 45%);
+  color: var(--zwift-ice);
+  min-height: 100%;
+}
+
+#__next {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

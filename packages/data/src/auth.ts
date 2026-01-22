@@ -55,7 +55,7 @@ const normalizeProfile = (uid: string, data: DocumentData): UserProfile => {
 };
 
 export const observeAuthState = (handler: (user: User | null) => void) => {
-  if (!isFirebaseConfigured) {
+  if (!isFirebaseConfigured || !firebaseAuth) {
     handler(null);
     return () => undefined;
   }
@@ -66,6 +66,9 @@ export const subscribeToUserProfile = (
   uid: string,
   handler: (profile: UserProfile) => void
 ): Unsubscribe => {
+  if (!firebaseDb) {
+    return () => undefined;
+  }
   const ref = doc(firebaseDb, "users", uid);
   return onSnapshot(ref, (snapshot) => {
     if (!snapshot.exists()) {
@@ -76,6 +79,9 @@ export const subscribeToUserProfile = (
 };
 
 export const ensureUserProfile = async (user: User): Promise<UserProfile> => {
+  if (!firebaseDb) {
+    throw new Error("Firebase is not configured.");
+  }
   const ref = doc(firebaseDb, "users", user.uid);
   const snapshot = await getDoc(ref);
   if (snapshot.exists()) {
@@ -105,6 +111,9 @@ export const updateUserPreferences = async (
   uid: string,
   preferences: UserPreferences
 ): Promise<void> => {
+  if (!firebaseDb) {
+    throw new Error("Firebase is not configured.");
+  }
   const ref = doc(firebaseDb, "users", uid);
   await updateDoc(ref, {
     preferences,
@@ -113,7 +122,7 @@ export const updateUserPreferences = async (
 };
 
 export const signInWithGoogleWeb = () => {
-  if (!isFirebaseConfigured) {
+  if (!isFirebaseConfigured || !firebaseAuth) {
     throw new Error("Firebase is not configured for Google auth.");
   }
   const provider = new GoogleAuthProvider();
@@ -122,7 +131,7 @@ export const signInWithGoogleWeb = () => {
 };
 
 export const signInWithGoogleCredential = (idToken?: string, accessToken?: string) => {
-  if (!isFirebaseConfigured) {
+  if (!isFirebaseConfigured || !firebaseAuth) {
     throw new Error("Firebase is not configured for Google auth.");
   }
   const credential = GoogleAuthProvider.credential(idToken || undefined, accessToken);
@@ -130,7 +139,7 @@ export const signInWithGoogleCredential = (idToken?: string, accessToken?: strin
 };
 
 export const signInWithAppleCredential = (idToken: string, nonce?: string) => {
-  if (!isFirebaseConfigured) {
+  if (!isFirebaseConfigured || !firebaseAuth) {
     throw new Error("Firebase is not configured for Apple auth.");
   }
   const provider = new OAuthProvider("apple.com");
@@ -141,4 +150,4 @@ export const signInWithAppleCredential = (idToken: string, nonce?: string) => {
   return signInWithCredential(firebaseAuth, credential);
 };
 
-export const signOutUser = () => signOut(firebaseAuth);
+export const signOutUser = () => (firebaseAuth ? signOut(firebaseAuth) : Promise.resolve());

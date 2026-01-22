@@ -1,20 +1,4 @@
 {
-  "expo": {
-    "name": "Lupin Zwift Completion Tracker",
-    "slug": "lupin-zwift-completion-tracker",
-    "version": "0.1.0",
-    "scheme": "lupinzwift",
-    "orientation": "portrait",
-    "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "package": "com.lupin.zwifttracker"
-    },
-    "web": {
-      "bundler": "metro"
-    }
-  }
+  "name": "LupinMobile",
+  "displayName": "LupinMobile"
 }

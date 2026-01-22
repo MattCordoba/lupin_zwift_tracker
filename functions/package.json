@@ -12,8 +12,7 @@
   "dependencies": {
     "firebase-admin": "^12.5.0",
     "firebase-functions": "^4.9.0",
-    "zwift-client": "^1.0.0",
-    "zwift-mobile-api": "^1.0.0"
+    "zwift-mobile-api": "^0.3.19"
   },
   "devDependencies": {
     "typescript": "^5.5.4"
