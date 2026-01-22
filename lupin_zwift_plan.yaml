@@ -1,0 +1,172 @@
+# Task plan for Lupin Zwift Completion Tracker (Expo + web)
+# Format modeled after tasks-example.yaml
+
+- name: "Phase 0 - Preflight Decisions & Accounts"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  Confirm core decisions:
+  - Repo name: lupin_zwift_tracker (GitHub: MattCordoba)
+  - Backend: Firebase (Auth + Firestore + Functions)
+  - Zwift API access: zwift-mobile-api (requires Zwift developer account); fallback to zwift-client if blocked
+  - World schedule source: Zwift Insider guest world schedule
+  - Logo path: /Users/mattc/Downloads/Lupin_Logo-04.png
+
+  Set up accounts:
+  - Request Zwift developer account (document status and timeline risk)
+  - Create Garmin developer app (OAuth credentials)
+  - Create Firebase project + OAuth clients (Google/Apple sign-in)
+
+  When complete, output: PREFLIGHT_DONE
+max_iterations: 12
+completion: "PREFLIGHT_DONE"
+
+- name: "Phase 1 - Repo Bootstrap & Monorepo Layout"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  Create repo lupin_zwift_tracker with Expo monorepo layout:
+  - apps/mobile (Expo iOS/Android)
+  - apps/web (Expo Web + expo-router)
+  - packages/ui (shared design system)
+  - packages/core (domain models, scoring, API clients)
+  - packages/config (env + constants)
+  - packages/types (shared types)
+  - packages/data (query layer, API adapters)
+  - functions (Firebase Functions, optional)
+
+  Tooling:
+  - pnpm + turborepo
+  - TypeScript, ESLint, Prettier
+  - Env handling for dev/prod
+  - Basic app shell for mobile/web
+
+  When complete, output: BOOTSTRAP_DONE
+max_iterations: 20
+completion: "BOOTSTRAP_DONE"
+
+- name: "Phase 2 - Auth & User Model (Firebase)"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  Implement auth + user profile:
+  - Google auth (mobile + web)
+  - Apple auth (optional, iOS only)
+  - Shared user profile across platforms
+  - Store user preferences (units, time budget defaults)
+
+  Add legal/branding:
+  - App name: "Lupin Zwift Completion Tracker"
+  - Copyright notice for Lupin
+  - Disclaimer about Zwift/Garmin trademarks
+
+  When complete, output: AUTH_DONE
+max_iterations: 18
+completion: "AUTH_DONE"
+
+- name: "Phase 3 - Zwift Integration & Route Catalog"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  Integrate Zwift data:
+  - Implement Zwift API client (zwift-mobile-api)
+  - If developer access blocked, implement fallback service using zwift-client
+  - Sync: rider profile, activities, route badges completed
+  - Build route catalog from Zwift endpoints
+  - Store route metadata including estimated time per route
+  - Exclude event-only / non-public routes
+
+  Data validation:
+  - Map activities to badges completed
+  - Handle missing routes gracefully
+
+  When complete, output: ZWIFT_DONE
+max_iterations: 25
+completion: "ZWIFT_DONE"
+
+- name: "Phase 4 - Garmin Integration & Readiness Inputs"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  Integrate Garmin health metrics:
+  - OAuth flow and token refresh
+  - Fetch: body battery, sleep score, HRV status, training load, recovery time
+  - Normalize metrics into a readiness score
+
+  Store readiness snapshots for analytics.
+
+  When complete, output: GARMIN_DONE
+max_iterations: 22
+completion: "GARMIN_DONE"
+
+- name: "Phase 5 - World Availability & Recommendation Engine"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  World availability:
+  - Pull daily available worlds from Zwift Insider guest world schedule
+  - Cache schedule and support timezone handling
+  - Filter routes to only those in available worlds
+
+  Recommendation engine (rule-based v1):
+  - Use readiness score + estimated time
+  - Produce 3 suggestions: short, medium, long
+  - Never recommend completed routes
+  - Compute impact: projected % badge completion + % hours burn-down
+
+  When complete, output: RECO_DONE
+max_iterations: 22
+completion: "RECO_DONE"
+
+- name: "Phase 6 - UI/UX + Theming"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  Implement polished UI:
+  - Zwift-inspired palette + typography
+  - Home: daily 3 suggestions with impact metrics
+  - Progress: badges completed %, hours completed %, remaining totals
+  - Route detail: time estimate, world availability, remaining impact
+
+  Integrate Lupin logo asset.
+
+  When complete, output: UI_DONE
+max_iterations: 20
+completion: "UI_DONE"
+
+- name: "Phase 7 - Analytics & Burn-down Views"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  Analytics:
+  - Store daily snapshots (completed badges, hours completed)
+  - Render burn-down chart over time
+  - Show weekly/monthly completion trends
+
+  When complete, output: ANALYTICS_DONE
+max_iterations: 15
+completion: "ANALYTICS_DONE"
+
+- name: "Phase 8 - CI/CD & Deployment"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  CI/CD:
+  - GitHub Actions: lint/test/build on PRs
+  - On main: trigger Vercel deployment
+  - Configure environment variables for web + mobile
+  - Document release process for mobile builds
+
+  When complete, output: CICD_DONE
+max_iterations: 12
+completion: "CICD_DONE"
+
+- name: "Phase 9 - QA, Docs, and Launch Checklist"
+dir: /Users/mattc/Documents/temp
+prompt: |
+  QA:
+  - End-to-end smoke tests for auth + sync
+  - Validate route completion logic
+  - Verify suggestions only include available worlds
+
+  Docs:
+  - Setup instructions
+  - Troubleshooting for Zwift/Garmin auth
+  - Data/privacy notes
+
+  Output a launch checklist.
+
+  When complete, output: QA_DONE
+max_iterations: 12
+completion: "QA_DONE"
